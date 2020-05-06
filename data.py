@@ -14,9 +14,9 @@ TRG = Field(tokenize = "spacy",
 def prepare_data(train_file_paths,test_file_paths,val_file_paths,debug_flag=True):
 
     
-    train_data = read_data(train_file_paths[0],train_file_paths[1],1000)
-    test_data = read_data(test_file_paths[0],test_file_paths[1],200)
-    val_data = read_data(val_file_paths[0],val_file_paths[1],200)
+    train_data = read_data(train_file_paths[0],train_file_paths[1],PreProcess,1000)
+    test_data = read_data(test_file_paths[0],test_file_paths[1],PreProcess,200)
+    val_data = read_data(val_file_paths[0],val_file_paths[1],PreProcess,200)
 
     if debug_flag:
         debug(train_data)
@@ -32,11 +32,11 @@ def debug(data):
 
 
 
-def read_data(X,y,limit=1000):
+def read_data(X, y, preprocess=None, limit=1000):
     examples = []
     fields = {'text-tokens': ('text', SRC),
               'summ-tokens': ('summ', TRG)}
-    for i,(x,y) in enumerate(zip(LineSentenceGenerator(X,PreProcess),LineSentenceGenerator(y,PreProcess))):
+    for i,(x,y) in enumerate(zip(LineSentenceGenerator(X,preprocess),LineSentenceGenerator(y,preprocess))):
         if i > limit:
             break
         text_field = x

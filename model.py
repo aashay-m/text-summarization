@@ -27,11 +27,21 @@ class PositionalEncoding(nn.Module):
 
 
 class TransformerSummarizer(nn.Module):
-    def __init__(self, vocab_size, d_model, nhead, num_encoder_layers, num_decoder_layers, dim_feedforward, max_seq_length, pos_dropout =0.1, trans_dropout= 0.1):
+    def __init__(self, nhead, num_encoder_layers, num_decoder_layers, dim_feedforward, max_seq_length,vocab_size,d_model=None, pos_dropout =0.1, trans_dropout= 0.1,embeddings=None):
         super().__init__()
-        self.d_model = d_model
-        self.embed_src = nn.Embedding(vocab_size, d_model)
-        self.embed_tgt = nn.Embedding(vocab_size, d_model)
+       
+        if embeddings is None:
+            self.embed_src = nn.Embedding(vocab_size, d_model)
+            self.embed_tgt = nn.Embedding(vocab_size, d_model)
+        else:
+            d_model = embeddings.size(1)
+            self.d_model = embeddings.size(1)
+            self.embed_src = nn.Embedding(*embeddings.shape)
+            self.embed_src.weight = nn.Parameter(embeddings,requires_grad=False)
+            
+            self.embed_tgt = nn.Embedding(*embeddings.shape)
+            self.embed_tgt.weight = nn.Parameter(embeddings,requires_grad=False)
+        
         self.pos_enc = PositionalEncoding(d_model, pos_dropout, max_seq_length)
 
         self.transformer = nn.Transformer(d_model, nhead, num_encoder_layers, num_decoder_layers, dim_feedforward, trans_dropout)
