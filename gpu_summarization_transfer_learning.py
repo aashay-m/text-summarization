@@ -158,14 +158,14 @@ def generate_summaries(data, model, tokenizer, outfile, outfile_true, device="cp
     
     with open(outfile, "w", encoding="utf-8") as predictions, open(outfile_true, "w", encoding="utf-8") as gold_standard:
         for batch_data in tqdm(chunk_data(data, batch_size)):
-            model.to(device)
+            # model.to(device)
             batch_text = [d.text for d in batch_data]
             batch_summary = [d.summ for d in batch_data]
             
             inputs = tokenizer.batch_encode_plus(batch_text, max_length=1024, return_tensors='pt', pad_to_max_length=True)
 
-            summaries = model.generate(input_ids=inputs['input_ids'].to(device), 
-                                    attention_mask=inputs["attention_mask"].to(device), 
+            summaries = model.generate(input_ids=inputs['input_ids'],#.to(device), 
+                                    attention_mask=inputs["attention_mask"],#.to(device), 
                                     max_length=max_length + 2,  
                                     min_length=min_length + 1, 
                                     num_beams=5, 
@@ -181,7 +181,7 @@ def generate_summaries(data, model, tokenizer, outfile, outfile_true, device="cp
                 gold_standard.write(true.rstrip("\r\n") + "\n")
                 gold_standard.flush()
     
-            model.cpu()
+            # model.cpu()
 
 
 def generate_summaries_no_chunk(data, model, tokenizer, outfile, outfile_true, device="cpu", max_length=150, min_length=50, batch_size=128, start_token=None):
