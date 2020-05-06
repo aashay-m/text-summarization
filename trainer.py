@@ -5,6 +5,7 @@ import torch.optim as optim
 from data import prepare_data,SRC,TRG
 from model import TransformerSummarizer
 from torchtext.data import Field, BucketIterator
+from torchtext.vocab import FastText
 import os
 
 import time
@@ -26,20 +27,33 @@ D_MODEL = 200 #embedding_size
 DIM_FEEDFORWARD = 200
 VOCAB_SIZE = len(SRC.vocab)
 print(VOCAB_SIZE)
-ATTENTION_HEADS = 8
+ATTENTION_HEADS = 6 # emb_dim must be divisible by number of heads (300 in our case)
 N_LAYERS = 1
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 BATCH_SIZE = 128
 
-train_iter = BucketIterator(train_data,BATCH_SIZE, shuffle=True,
-                                                 sort_key=lambda x: len(x.text), sort_within_batch=True)
+def make_iters(train_data,val_data,test_data):
 
-val_iter = BucketIterator(val_data, BATCH_SIZE, sort_key=lambda x: len(x.text), sort_within_batch=True)
-test_iter = BucketIterator(test_data,BATCH_SIZE, sort_key=lambda x: len(x.text), sort_within_batch=True)
+    train_iter = BucketIterator(train_data,BATCH_SIZE, shuffle=True,
+                                                    sort_key=lambda x: len(x.text), sort_within_batch=True)
 
-model = TransformerSummarizer(VOCAB_SIZE, D_MODEL, ATTENTION_HEADS,N_LAYERS, N_LAYERS, DIM_FEEDFORWARD, SEQ_LEN).to(device)
+    val_iter = BucketIterator(val_data, BATCH_SIZE, sort_key=lambda x: len(x.text), sort_within_batch=True)
+    test_iter = BucketIterator(test_data,BATCH_SIZE, sort_key=lambda x: len(x.text), sort_within_batch=True)
+
+    return train_iter,val_iter,test_iter
+
+def load_pretrained(field):
+    ff = FastText("en")
+    embeddings =  ff.get_vecs_by_tokens(field.vocab.itos)
+    return embeddings
+
+train_iter,val_iter,test_iter = make_iters(train_data,val_data,test_data)
+
+embeddings = load_pretrained(SRC)
+
+model = TransformerSummarizer( ATTENTION_HEADS,N_LAYERS, N_LAYERS, DIM_FEEDFORWARD, SEQ_LEN,VOCAB_SIZE,embeddings=embeddings).to(device)
 
 PAD_IDX = TRG.vocab.stoi['<pad>']
 
@@ -135,8 +149,8 @@ def epoch_time(start_time: int,
     elapsed_secs = int(elapsed_time - (elapsed_mins * 60))
     return elapsed_mins, elapsed_secs
 
-
-optimizer = optim.Adam(model.parameters())
+parameters = filter(lambda p: p.requires_grad,model.parameters())
+optimizer = optim.Adam(parameters)
 
 num_batches = math.ceil(len(train_data)/BATCH_SIZE)
 val_batches = math.ceil(len(val_data)/BATCH_SIZE)
