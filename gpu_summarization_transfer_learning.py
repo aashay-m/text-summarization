@@ -1,9 +1,6 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
+# To add a new cell, type '# %%'
+# To add a new markdown cell, type '# %% [markdown]'
+# %%
 import re
 import string 
 import os
@@ -135,22 +132,16 @@ def chunk_data(data, n):
         
 
 
-# In[2]:
-
-
+# %%
 # pretrained_embeddings = api.load("fasttext-wiki-news-subwords-300")
 
 
-# In[3]:
-
-
+# %%
 # !wget https://s3.amazonaws.com/datasets.huggingface.co/summarization/cnn_dm.tgz 
 # !tar -xzvf cnn_dm.tgz
 
 
-# In[4]:
-
-
+# %%
 cnn_dailymail_path = os.path.join(os.getcwd(), "cnn_dm/")
 
 train_file_X = os.path.join(cnn_dailymail_path, "train.source")
@@ -161,9 +152,7 @@ val_file_X = os.path.join(cnn_dailymail_path, "val.source")
 val_file_y = os.path.join(cnn_dailymail_path, "val.target")
 
 
-# In[ ]:
-
-
+# %%
 def generate_summaries(data, model, tokenizer, outfile, outfile_true, device="cpu", max_length=150, min_length=50, batch_size=128, start_token=None):
     
     
@@ -195,9 +184,37 @@ def generate_summaries(data, model, tokenizer, outfile, outfile_true, device="cp
             model.cpu()
 
 
-# In[ ]:
+def generate_summaries_no_chunk(data, model, tokenizer, outfile, outfile_true, device="cpu", max_length=150, min_length=50, batch_size=128, start_token=None):
+    
+    with open(outfile, "w", encoding="utf-8") as predictions, open(outfile_true, "w", encoding="utf-8") as gold_standard:
 
+        batch_text = [d.text for d in data]
+        batch_summary = [d.summ for d in data]
 
+        model.to(device)
+        
+        inputs = tokenizer.batch_encode_plus(batch_text, max_length=1024, return_tensors='pt', pad_to_max_length=True)
+
+        summaries = model.generate(input_ids=inputs['input_ids'].to(device), 
+                                attention_mask=inputs["attention_mask"].to(device), 
+                                max_length=max_length + 2,  
+                                min_length=min_length + 1, 
+                                num_beams=5, 
+                                no_repeat_ngram_size=3,
+                                early_stopping=True,
+                                decoder_start_token_id=start_token)
+
+        outputs = [tokenizer.decode(summary, skip_special_tokens=True, clean_up_tokenization_spaces=False) for summary in summaries]
+        
+        for summ, true in zip(outputs, batch_summary):
+            predictions.write(summ.rstrip("\r\n") + "\n")
+            predictions.flush()
+            gold_standard.write(true.rstrip("\r\n") + "\n")
+            gold_standard.flush()
+
+        model.cpu()
+
+# %%
 from torchtext.data import Dataset,Example
 from torchtext.data import Field, BucketIterator
 
@@ -228,9 +245,7 @@ def read_data(X, y, preprocess=None, limit=1000):
     return Dataset(examples, fields=[('text', SRC), ('summ', TRG)])
 
 
-# In[ ]:
-
-
+# %%
 train_data = read_data(train_file_X, train_file_y, preprocess=None, limit=1000)
 test_data = read_data(test_file_X, test_file_y, preprocess=None, limit=200)
 val_data = read_data(val_file_X, val_file_y, preprocess=None, limit=200)
@@ -239,27 +254,21 @@ SRC.build_vocab(train_data.text, min_freq = 2,max_size=20000)
 TRG.build_vocab(train_data.summ, min_freq = 2)
 
 
-# In[ ]:
-
-
-# BATCH_SIZE = 16
-BATCH_SIZE = 4096
+# %%
+BATCH_SIZE = 16
+# BATCH_SIZE = 64
 MAX_LENGTH = 300
 MIN_LENGTH = 50
 
 
-# In[ ]:
-
-
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-device = "cpu"
+# %%
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = "cpu"
 t5_type = "t5-small"
 bart_type = "bart-large-cnn"
 
 
-# In[ ]:
-
-cnn_dailymail_out_path = os.path.join(cnn_dailymail_path, "output")
+# %%
 results_t5 = os.path.join(cnn_dailymail_path, "t5.prediction")
 results_bart = os.path.join(cnn_dailymail_path, "bart.prediction")
 
@@ -267,22 +276,7 @@ labels_t5 = os.path.join(cnn_dailymail_path, "t5.true")
 labels_bart = os.path.join(cnn_dailymail_path, "bart.true")
 
 
-# In[ ]:
-
-
-bart_model = BartForConditionalGeneration.from_pretrained(bart_type)
-bart_tokenizer = BartTokenizer.from_pretrained(bart_type)
-
-
-# In[ ]:
-
-
-generate_summaries(train_data, bart_model, bart_tokenizer, results_bart, labels_bart, device, MAX_LENGTH, MIN_LENGTH, BATCH_SIZE, bart_model.config.eos_token_id)
-
-
-# In[ ]:
-
-
+# %%
 t5_model = T5ForConditionalGeneration.from_pretrained(t5_type)
 t5_tokenizer = T5Tokenizer.from_pretrained(t5_type)
 
@@ -291,20 +285,23 @@ if parameters is not None:
     t5_model.config.update(parameters.get("summarization", {}))
 
 
-# In[ ]:
+# %%
+generate_summaries_no_chunk(train_data, t5_model, t5_tokenizer, results_t5, labels_t5, device, MAX_LENGTH, MIN_LENGTH, BATCH_SIZE, None)
 
 
-generate_summaries(train_data, t5_model, t5_tokenizer, results_t5, labels_t5, device, MAX_LENGTH, MIN_LENGTH, BATCH_SIZE, None)
+# %%
+bart_model = BartForConditionalGeneration.from_pretrained(bart_type)
+bart_tokenizer = BartTokenizer.from_pretrained(bart_type)
 
 
-# In[ ]:
+# %%
+generate_summaries_no_chunk(train_data, bart_model, bart_tokenizer, results_bart, labels_bart, device, MAX_LENGTH, MIN_LENGTH, BATCH_SIZE, bart_model.config.eos_token_id)
+
+
+# %%
 
 
 
-
-
-# In[ ]:
-
-
+# %%
 
 
