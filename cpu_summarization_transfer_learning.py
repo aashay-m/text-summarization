@@ -194,6 +194,35 @@ def generate_summaries(data, model, tokenizer, outfile, outfile_true, device="cp
     
             model.cpu()
 
+def generate_summaries_no_chunk(data, model, tokenizer, outfile, outfile_true, device="cpu", max_length=150, min_length=50, batch_size=128, start_token=None):
+    
+    with open(outfile, "w", encoding="utf-8") as predictions, open(outfile_true, "w", encoding="utf-8") as gold_standard:
+
+        batch_text = [d.text for d in data]
+        batch_summary = [d.summ for d in data]
+
+        # model.to(device)
+        
+        inputs = tokenizer.batch_encode_plus(batch_text, max_length=1024, return_tensors='pt', pad_to_max_length=True)
+
+        summaries = model.generate(input_ids=inputs['input_ids'],#.to(device), 
+                                attention_mask=inputs["attention_mask"],#.to(device), 
+                                max_length=max_length + 2,  
+                                min_length=min_length + 1, 
+                                num_beams=5, 
+                                no_repeat_ngram_size=3,
+                                early_stopping=True,
+                                decoder_start_token_id=start_token)
+
+        outputs = [tokenizer.decode(summary, skip_special_tokens=True, clean_up_tokenization_spaces=False) for summary in summaries]
+        
+        for summ, true in zip(outputs, batch_summary):
+            predictions.write(summ.rstrip("\r\n") + "\n")
+            predictions.flush()
+            gold_standard.write(true.rstrip("\r\n") + "\n")
+            gold_standard.flush()
+
+        # model.cpu()
 
 # In[ ]:
 
@@ -260,11 +289,12 @@ bart_type = "bart-large-cnn"
 # In[ ]:
 
 cnn_dailymail_out_path = os.path.join(cnn_dailymail_path, "output")
-results_t5 = os.path.join(cnn_dailymail_path, "t5.prediction")
-results_bart = os.path.join(cnn_dailymail_path, "bart.prediction")
+results_t5 = os.path.join(cnn_dailymail_out_path, "t5.prediction")
+results_bart = os.path.join(cnn_dailymail_out_path, "bart.prediction")
 
-labels_t5 = os.path.join(cnn_dailymail_path, "t5.true")
-labels_bart = os.path.join(cnn_dailymail_path, "bart.true")
+labels_t5 = os.path.join(cnn_dailymail_out_path, "t5.true")
+labels_bart = os.path.join(cnn_dailymail_out_path, "bart.true")
+
 
 
 # In[ ]:

@@ -191,12 +191,12 @@ def generate_summaries_no_chunk(data, model, tokenizer, outfile, outfile_true, d
         batch_text = [d.text for d in data]
         batch_summary = [d.summ for d in data]
 
-        model.to(device)
+        # model.to(device)
         
         inputs = tokenizer.batch_encode_plus(batch_text, max_length=1024, return_tensors='pt', pad_to_max_length=True)
 
-        summaries = model.generate(input_ids=inputs['input_ids'].to(device), 
-                                attention_mask=inputs["attention_mask"].to(device), 
+        summaries = model.generate(input_ids=inputs['input_ids'],#.to(device), 
+                                attention_mask=inputs["attention_mask"],#.to(device), 
                                 max_length=max_length + 2,  
                                 min_length=min_length + 1, 
                                 num_beams=5, 
@@ -212,7 +212,8 @@ def generate_summaries_no_chunk(data, model, tokenizer, outfile, outfile_true, d
             gold_standard.write(true.rstrip("\r\n") + "\n")
             gold_standard.flush()
 
-        model.cpu()
+        # model.cpu()
+
 
 # %%
 from torchtext.data import Dataset,Example
