@@ -299,20 +299,6 @@ labels_bart = os.path.join(cnn_dailymail_out_path, "bart.true")
 
 # In[ ]:
 
-
-bart_model = BartForConditionalGeneration.from_pretrained(bart_type)
-bart_tokenizer = BartTokenizer.from_pretrained(bart_type)
-
-
-# In[ ]:
-
-
-generate_summaries(train_data, bart_model, bart_tokenizer, results_bart, labels_bart, device, MAX_LENGTH, MIN_LENGTH, BATCH_SIZE, bart_model.config.eos_token_id)
-
-
-# In[ ]:
-
-
 t5_model = T5ForConditionalGeneration.from_pretrained(t5_type)
 t5_tokenizer = T5Tokenizer.from_pretrained(t5_type)
 
@@ -329,7 +315,16 @@ generate_summaries(train_data, t5_model, t5_tokenizer, results_t5, labels_t5, de
 
 # In[ ]:
 
+# bart_model = BartForConditionalGeneration.from_pretrained(bart_type)
+# bart_tokenizer = BartTokenizer.from_pretrained(bart_type)
 
+# # In[ ]:
+
+
+# generate_summaries(train_data, bart_model, bart_tokenizer, results_bart, labels_bart, device, MAX_LENGTH, MIN_LENGTH, BATCH_SIZE, bart_model.config.eos_token_id)
+
+
+# In[ ]:
 
 
 

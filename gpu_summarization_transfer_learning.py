@@ -256,7 +256,7 @@ TRG.build_vocab(train_data.summ, min_freq = 2)
 
 
 # %%
-BATCH_SIZE = 16
+BATCH_SIZE = 512
 # BATCH_SIZE = 64
 MAX_LENGTH = 300
 MIN_LENGTH = 50
@@ -278,16 +278,16 @@ labels_bart = os.path.join(cnn_dailymail_path, "bart.true")
 
 
 # %%
-t5_model = T5ForConditionalGeneration.from_pretrained(t5_type)
-t5_tokenizer = T5Tokenizer.from_pretrained(t5_type)
+# t5_model = T5ForConditionalGeneration.from_pretrained(t5_type)
+# t5_tokenizer = T5Tokenizer.from_pretrained(t5_type)
 
-parameters = t5_model.config.task_specific_params
-if parameters is not None:
-    t5_model.config.update(parameters.get("summarization", {}))
+# parameters = t5_model.config.task_specific_params
+# if parameters is not None:
+#     t5_model.config.update(parameters.get("summarization", {}))
 
 
-# %%
-generate_summaries_no_chunk(train_data, t5_model, t5_tokenizer, results_t5, labels_t5, device, MAX_LENGTH, MIN_LENGTH, BATCH_SIZE, None)
+# # %%
+# generate_summaries_no_chunk(train_data, t5_model, t5_tokenizer, results_t5, labels_t5, device, MAX_LENGTH, MIN_LENGTH, BATCH_SIZE, None)
 
 
 # %%
@@ -296,7 +296,7 @@ bart_tokenizer = BartTokenizer.from_pretrained(bart_type)
 
 
 # %%
-generate_summaries_no_chunk(train_data, bart_model, bart_tokenizer, results_bart, labels_bart, device, MAX_LENGTH, MIN_LENGTH, BATCH_SIZE, bart_model.config.eos_token_id)
+generate_summaries(train_data, bart_model, bart_tokenizer, results_bart, labels_bart, device, MAX_LENGTH, MIN_LENGTH, BATCH_SIZE, bart_model.config.eos_token_id)
 
 
 # %%
