@@ -272,7 +272,7 @@ TRG.build_vocab(train_data.summ, min_freq = 2)
 
 
 # BATCH_SIZE = 16
-BATCH_SIZE = 4096
+BATCH_SIZE = 1
 MAX_LENGTH = 300
 MIN_LENGTH = 50
 
