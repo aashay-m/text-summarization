@@ -28,23 +28,23 @@ def get_src_trg(tokenize=True):
     return SRC, TRG
 
 
-def prepare_data(train_file_paths,test_file_paths,val_file_paths,debug_flag=True):
+# def prepare_data(train_file_paths,test_file_paths,val_file_paths,debug_flag=True):
 
-    train_data = read_data(train_file_paths[0],train_file_paths[1],PreProcess,1000)
-    test_data = read_data(test_file_paths[0],test_file_paths[1],PreProcess,200)
-    val_data = read_data(val_file_paths[0],val_file_paths[1],PreProcess,200)
+#     train_data = read_data(train_file_paths[0],train_file_paths[1],PreProcess,1000)
+#     test_data = read_data(test_file_paths[0],test_file_paths[1],PreProcess,200)
+#     val_data = read_data(val_file_paths[0],val_file_paths[1],PreProcess,200)
 
-    if debug_flag:
-        debug(train_data)
+#     if debug_flag:
+#         debug(train_data)
 
-    return (train_data,test_data,val_data)
+#     return (train_data,test_data,val_data)
 
 
 
-def debug(data):
-    print(data.fields)
-    print(data[0].text)
-    print(data[0].summ)
+# def debug(data):
+#     print(data.fields)
+#     print(data[0].text)
+#     print(data[0].summ)
 
 
 

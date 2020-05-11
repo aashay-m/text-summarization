@@ -9,7 +9,9 @@ from gensim.models import KeyedVectors
 import gensim.utils as utils
 import gensim.downloader as api
 
+from tqdm import tqdm
 from functools import lru_cache
+
 import nltk
 nltk.download('wordnet')
 from nltk.stem import WordNetLemmatizer
@@ -109,9 +111,25 @@ def chunk_data(data, n):
         yield data[i:i+n]
         
 
-def generate_summaries(data, model, tokenizer, outfile, outfile_true, device="cpu", max_length=150, min_length=50, batch_size=128, start_token=None):
+def get_remaining_data(data, true_file):
+
+    final_data = []
+    already_done = open(true_file, "r", encoding="utf-8").readlines()
+
+    for example in data:
+        if example.summ in already_done:
+            continue
+        final_data.append(example)
     
-    with open(outfile, "w", encoding="utf-8") as predictions, open(outfile_true, "w", encoding="utf-8") as gold_standard:
+    print("Pruned data to process from %s to %s" % (len(data.examples), len(final_data)))
+    data.examples = final_data
+
+    return data
+
+
+def generate_summaries(data, model, tokenizer, outfile, outfile_true, device="cpu", max_length=150, min_length=50, batch_size=128, start_token=None, mode="w"):
+    
+    with open(outfile, mode, encoding="utf-8") as predictions, open(outfile_true, mode, encoding="utf-8") as gold_standard:
         for batch_data in tqdm(chunk_data(data, batch_size)):
             # model.to(device)
             batch_text = [d.text for d in batch_data]
@@ -138,9 +156,9 @@ def generate_summaries(data, model, tokenizer, outfile, outfile_true, device="cp
     
             # model.cpu()
 
-def generate_summaries_no_chunk(data, model, tokenizer, outfile, outfile_true, device="cpu", max_length=150, min_length=50, batch_size=128, start_token=None):
+def generate_summaries_no_chunk(data, model, tokenizer, outfile, outfile_true, device="cpu", max_length=150, min_length=50, batch_size=128, start_token=None, mode="w"):
     
-    with open(outfile, "w", encoding="utf-8") as predictions, open(outfile_true, "w", encoding="utf-8") as gold_standard:
+    with open(outfile, mode, encoding="utf-8") as predictions, open(outfile_true, mode, encoding="utf-8") as gold_standard:
 
         batch_text = [d.text for d in data]
         batch_summary = [d.summ for d in data]
