@@ -115,6 +115,7 @@ def get_remaining_data(data, true_file):
 
     final_data = []
     already_done = open(true_file, "r", encoding="utf-8").readlines()
+    already_done = [sent.rstrip("\r\n") for sent in already_done]
 
     for example in data:
         if example.summ in already_done:
@@ -130,7 +131,7 @@ def get_remaining_data(data, true_file):
 def generate_summaries(data, model, tokenizer, outfile, outfile_true, device="cpu", max_length=150, min_length=50, batch_size=128, start_token=None, mode="w"):
     
     with open(outfile, mode, encoding="utf-8") as predictions, open(outfile_true, mode, encoding="utf-8") as gold_standard:
-        for batch_data in tqdm(chunk_data(data, batch_size)):
+        for batch_data in tqdm(chunk_data(data, batch_size), total=len(data)):
             # model.to(device)
             batch_text = [d.text for d in batch_data]
             batch_summary = [d.summ for d in batch_data]
