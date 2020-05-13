@@ -24,8 +24,6 @@ def train(model: nn.Module, iterator: BucketIterator, num_batches: int, optimize
         loss = criterion(output, trg_out.view(-1))
         loss.backward()
 
-        torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
-
         optimizer.step()
 
         epoch_loss += loss.item()
