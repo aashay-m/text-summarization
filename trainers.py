@@ -6,12 +6,12 @@ import torch.nn as nn
 device = torch.device('cpu')
 
 # def train(model: nn.Module, iterator: BucketIterator, num_batches: int, optimizer: optim.Optimizer, criterion: nn.Module, clip: float):
-def train(model, iterator, num_batches, optimizer, criterion, clip):
+def train(model, iterator, num_batches, optimizer, criterion):
     
     epoch_loss = 0
     model.train()
 
-    for batch in tqdm(iterator,total=num_batches):
+    for batch in tqdm(iterator, total=num_batches):
 
         src = batch.text
         trg = batch.summ
@@ -46,7 +46,7 @@ def evaluate(model, iterator, num_batches, criterion, desc):
             trg_inp, trg_out = trg[:-1, :], trg[1:, :]
 
             output = model(src.to(device), trg_inp.to(device))
-            output = output.view(-1,output.shape[-1])
+            output = output.view(-1, output.shape[-1])
 
             loss = criterion(output, trg_out.view(-1))
             epoch_loss += loss.item()

@@ -3,6 +3,7 @@ import re
 import string
 import time
 import math
+import argparse
 
 import torch
 import torch.nn as nn
@@ -12,7 +13,7 @@ import pandas as pd
 import torch.optim as optim
 import itertools
 
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 
 import gensim
 import gensim.downloader as api
@@ -28,13 +29,10 @@ from utils import *
 from data import get_src_trg, read_data
 from model import TransformerSummarizer
 from trainers import train, evaluate
+from generate_summary import generate_summary
 
-BATCH_SIZE = 256
+MAX_LENGTH = 250
 SEQ_LEN = 4000
-
-TRAIN_SIZE = 50000
-TEST_SIZE = 5000
-VAL_SIZE = 5000
 
 D_MODEL = 300 # Embedding dimension
 DIM_FEEDFORWARD = 300  # Dimensionality of the hidden state
@@ -42,7 +40,6 @@ DIM_FEEDFORWARD = 300  # Dimensionality of the hidden state
 ATTENTION_HEADS = 6  # number of attention heads
 N_LAYERS = 3 # number of encoder/decoder layers
 
-N_EPOCHS = 25
 CLIP = 1
 
 device = torch.device('cpu')
@@ -57,18 +54,33 @@ test_file_y = os.path.join(base_dir,"test.target")
 val_file_X = os.path.join(base_dir,"val.source")
 val_file_y = os.path.join(base_dir,"val.target")
 
-out_dir = os.path.join(os.getcwd(), "results", "transformer")
+out_dir = os.path.join(os.getcwd(), "results", "transformer", "full")
 
 
 if __name__ == '__main__':
 
+    parser = argparse.ArgumentParser(description='Generate Text Summaries using a Transformer Network')
+
+    parser.add_argument('--training_size', type=int, help='Size of the training set to use (0 for the full set)', default=0)
+    parser.add_argument('--test_size', type=int, help='Size of the test set to use (0 for the full set)', default=5000)
+
+    parser.add_argument('--epochs', type=int, help='Number of Epochs to use for training', default=25)
+    parser.add_argument('--batch_size', type=int, help='Batch Size to use for training', default=128)
+    args = parser.parse_args()
+
+    TRAIN_SIZE = None if args.training_size == 0 else args.training_size
+    TEST_SIZE = None if args.test_size == 0 else args.test_size
+    VAL_SIZE = 5000
+    N_EPOCHS = args.epochs
+    BATCH_SIZE = args.batch_size
+
     SRC, TRG = get_src_trg(True)
 
     train_data = read_data(train_file_X, train_file_y, SRC, SRC, PreProcessMinimal, TRAIN_SIZE)
-    test_data = read_data(test_file_X, test_file_y, SRC, SRC, PreProcessMinimal, TEST_SIZE)
     val_data = read_data(val_file_X, val_file_y, SRC, SRC, PreProcessMinimal, VAL_SIZE)
+    test_data = read_data(test_file_X, test_file_y, SRC, SRC, PreProcessMinimal, TEST_SIZE)
 
-    SRC.build_vocab(train_data, test_data, val_data, min_freq = 2)
+    SRC.build_vocab(train_data, test_data, val_data, min_freq=10)
     VOCAB_SIZE = len(SRC.vocab)
 
     print("Data read. Vocab Size %s" % VOCAB_SIZE)
@@ -100,7 +112,7 @@ if __name__ == '__main__':
     for epoch in range(N_EPOCHS):
         start_time = time.time()
 
-        train_loss = train(model, train_iter, num_batches, optimizer, criterion, CLIP)
+        train_loss = train(model, train_iter, num_batches, optimizer, criterion)
         valid_loss = evaluate(model, val_iter, val_batches, criterion, "evaluat")
 
         end_time = time.time()
@@ -118,32 +130,21 @@ if __name__ == '__main__':
     print(f'| Test Loss: {test_loss:.3f}')
 
     print("Training Done")
-    print(f'Saving Model')
+    print("Saving Model")
     torch.save(model.state_dict(), os.path.join(out_dir, "transformer_model.pt"))
-
 
     with open(os.path.join(out_dir, "raw.txt"), "w", encoding="utf-8") as text, \
             open(os.path.join(out_dir, "pred.txt"), "w", encoding="utf-8") as pred, \
                 open(os.path.join(out_dir, "true.txt"), "w", encoding="utf-8") as true:
 
-        for iter, batch in enumerate(test_iter):
+        for data in tqdm(test_data, total=TEST_SIZE):
 
-            src = batch.text
-            trg = batch.summ
-            trg_inp, trg_out = trg[:-1, :], trg[1:, :]
+            src_text = data.text
+            trg_text = data.summ
 
-            output = model(src, trg)
-            output = F.softmax(output, dim=-1)
-            output = output_test.argmax(-1)
-
-            raw_text = " ".join([src_list[i] for i in src.squeeze(1).transpose(0,1)[0].tolist()])
-            true_summary = " ".join([src_list[i] for i in trg.squeeze(1).transpose(0,1)[0].tolist()])
-            prediction = " ".join([src_list[i] for i in output.transpose(0,1)[0].tolist()])
-
-            # print(output.transpose(0,1)[0].shape)
-            # print("text: ", raw_text)
-            # print("\n\nsumm: ", true_summary)
-            # print("\n\npred: ", prediction)
+            raw_text = " ".join(src_text)
+            true_summary = " ".join(trg_text)
+            prediction = generate_summary(raw_text, model, src_list, src_dict, MAX_LENGTH)
 
             text.write(raw_text + "\n")
             true.write(true_summary + "\n")

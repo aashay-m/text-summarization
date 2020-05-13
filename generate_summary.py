@@ -6,7 +6,7 @@ import math
 import os
 
 
-def word2idx_mapper(text,vocab_dict):
+def word2idx_mapper(text, vocab_dict):
     """ 
     Preprocess -> Tokenize and map the word tokens to vocab indexes
     : return list of indexes of the words.
@@ -19,7 +19,7 @@ def word2idx_mapper(text,vocab_dict):
     return ids
 
 
-def idx2seq(idx_list,vocab_list):
+def idx2seq(idx_list, vocab_list):
     """
     : param idx_list : list of indices
     : param vocab_list : index2word mapping list
@@ -28,7 +28,8 @@ def idx2seq(idx_list,vocab_list):
     """
     return " ".join(vocab_list[i] for i in idx_list)
 
-def generate_summary(text,model,vocab_list,vocab_dict,max_len=150,device='cpu'):
+def generate_summary(text, model, vocab_list, vocab_dict, max_len=150, device='cpu'):
+
     src = torch.Tensor(word2idx_mapper(text,vocab_dict)).long().unsqueeze(1).to(device)
     
     memory = model.transformer.encoder(model.pos_enc(model.embed_src(src) * math.sqrt(model.d_model)))
@@ -45,8 +46,7 @@ def generate_summary(text,model,vocab_list,vocab_dict,max_len=150,device='cpu'):
         
         if out_token == vocab_dict['<eos>']:
             break
-        
-        
+
     return idx2seq(out_idx,vocab_list)
 
 if __name__ == "__main__":
