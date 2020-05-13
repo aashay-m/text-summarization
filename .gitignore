@@ -4,3 +4,5 @@ __pycache__/
 .vector_cache/
 .ipynb_checkpoints/Text_summarization-checkpoint.ipynb
 .ipynb_checkpoints/overall_text_summ-checkpoint.ipynb
+fix_files.py
+results/final/corrected/train.target
