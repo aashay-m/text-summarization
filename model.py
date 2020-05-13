@@ -98,7 +98,7 @@ class TransformerSummarizer(nn.Module):
     def forward(self, src, tgt):
 
         if self.tgt_mask is None or self.tgt_mask.size(0) != len(tgt):
-            self.trg_mask = self.generate_square_mask(len(tgt)).to(tgt.device)
+            self.tgt_mask = self.generate_square_mask(len(tgt)).to(tgt.device)
         
         src_pad_mask = self.make_pad_mask(src,self.pad_idx)
         tgt_pad_mask = self.make_pad_mask(tgt,self.pad_idx)

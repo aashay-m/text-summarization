@@ -29,7 +29,7 @@ from data import get_src_trg, read_data
 from model import TransformerSummarizer
 from trainers import train, evaluate
 
-BATCH_SIZE = 512
+BATCH_SIZE = 256
 SEQ_LEN = 4000
 
 TRAIN_SIZE = 50000
@@ -42,7 +42,7 @@ DIM_FEEDFORWARD = 300  # Dimensionality of the hidden state
 ATTENTION_HEADS = 6  # number of attention heads
 N_LAYERS = 3 # number of encoder/decoder layers
 
-N_EPOCHS = 100
+N_EPOCHS = 25
 CLIP = 1
 
 device = torch.device('cpu')
@@ -110,6 +110,7 @@ if __name__ == '__main__':
         print(f'Epoch: {epoch+1:02} | Time: {epoch_mins}m {epoch_secs}s')
         print(f'\tTrain Loss: {train_loss:.3f}')
         print(f'\t Val. Loss: {valid_loss:.3f}')
+        torch.save(model.state_dict(), os.path.join(out_dir, "transformer_model.pt"))
         
     test_size = math.ceil(len(test_data)/BATCH_SIZE)
     test_loss = evaluate(model, test_iter, test_size, criterion, "test")
