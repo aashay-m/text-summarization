@@ -29,6 +29,14 @@ def idx2seq(idx_list,vocab_list):
     return " ".join(vocab_list[i] for i in idx_list)
 
 def generate_summary(text,model,vocab_list,vocab_dict,max_len=150,device='cpu'):
+    """
+    :param text       : actual text
+    :param model      : transformer model
+    :param vocab_list : idx2word list of the vocab
+    :param vocab_dict : word2idx dict of the vocab
+    :param max_len    : max length of the generated text, 150 by default
+    :param device     : device to store the tensors in, cpu by default
+    """
     src = torch.Tensor(word2idx_mapper(text,vocab_dict)).long().unsqueeze(1).to(device)
     
     memory = model.transformer.encoder(model.pos_enc(model.embed_src(src) * math.sqrt(model.d_model)))
