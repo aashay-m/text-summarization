@@ -2,3 +2,4 @@ data/
 __pycache__/
 .vscode/
 .vector_cache/
+.ipynb_checkpoints/Text_summarization-checkpoint.ipynb

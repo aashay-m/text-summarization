@@ -28,6 +28,7 @@ from gensim.models import KeyedVectors
 
 from utils import *
 from data import *
+from trainers import generate_summaries, generate_summaries_no_chunk
 
 # pretrained_embeddings = api.load("fasttext-wiki-news-subwords-300")
 
@@ -106,7 +107,7 @@ if __name__ == '__main__':
         mode = "a"
         train_data = get_remaining_data(train_data, labels_file)
 
-    generate_summaries(train_data, model, tokenizer, results_file, labels_file, device, MAX_LENGTH, MIN_LENGTH, BATCH_SIZE, decoder_start_token_id, mode=mode)
+    generate_summaries(train_data, model, tokenizer, results_file, labels_file, MAX_LENGTH, MIN_LENGTH, BATCH_SIZE, decoder_start_token_id, mode=mode)
 
 
 
