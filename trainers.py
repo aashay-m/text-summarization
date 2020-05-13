@@ -2,11 +2,12 @@ from tqdm import tqdm
 from utils import chunk_data
 
 import torch
+import torch.nn as nn
 device = torch.device('cpu')
 
-def train(model: nn.Module, iterator: BucketIterator, num_batches: int, optimizer: optim.Optimizer, criterion: nn.Module, clip: float):
+# def train(model: nn.Module, iterator: BucketIterator, num_batches: int, optimizer: optim.Optimizer, criterion: nn.Module, clip: float):
+def train(model, iterator, num_batches, optimizer, criterion, clip):
     
-    print("Training Started")
     epoch_loss = 0
     model.train()
 
@@ -28,14 +29,12 @@ def train(model: nn.Module, iterator: BucketIterator, num_batches: int, optimize
 
         epoch_loss += loss.item()
         
-    print("Training Done")
-
     return epoch_loss / len(iterator)
 
 
-def evaluate(model: nn.Module, iterator: BucketIterator, num_batches:int, criterion: nn.Module, desc: str):
+# def evaluate(model: nn.Module, iterator: BucketIterator, num_batches:int, criterion: nn.Module, desc: str):
+def evaluate(model, iterator, num_batches, criterion, desc):
 
-    print(f'{desc}ing')
     epoch_loss = 0
     model.eval()
     
@@ -52,7 +51,6 @@ def evaluate(model: nn.Module, iterator: BucketIterator, num_batches:int, criter
             loss = criterion(output, trg_out.view(-1))
             epoch_loss += loss.item()
             
-    print(f"{desc}ing Done")
 
     return epoch_loss / len(iterator)
 

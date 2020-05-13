@@ -63,13 +63,15 @@ out_dir = os.path.join(os.getcwd(), "results", "transformer")
 if __name__ == '__main__':
 
     SRC, TRG = get_src_trg(True)
-    VOCAB_SIZE = len(SRC.vocab)  
 
     train_data = read_data(train_file_X, train_file_y, SRC, SRC, PreProcessMinimal, TRAIN_SIZE)
     test_data = read_data(test_file_X, test_file_y, SRC, SRC, PreProcessMinimal, TEST_SIZE)
     val_data = read_data(val_file_X, val_file_y, SRC, SRC, PreProcessMinimal, VAL_SIZE)
 
-    SRC.build_vocab(train_data.text, min_freq = 2)
+    SRC.build_vocab(train_data, test_data, val_data, min_freq = 2)
+    VOCAB_SIZE = len(SRC.vocab)
+
+    print("Data read. Vocab Size %s" % VOCAB_SIZE)
 
     src_list = SRC.vocab.itos  # index2word
     src_dict = SRC.vocab.stoi # word2index
@@ -86,15 +88,20 @@ if __name__ == '__main__':
     model = TransformerSummarizer(ATTENTION_HEADS, N_LAYERS, N_LAYERS, DIM_FEEDFORWARD, \
                                     SEQ_LEN, VOCAB_SIZE, PAD_IDX, embeddings=embeddings).to(device)
 
+    num_batches = math.ceil(len(train_data)/BATCH_SIZE)
+    val_batches = math.ceil(len(val_data)/BATCH_SIZE)
+
     parameters = filter(lambda p:p.requires_grad, model.parameters())
     optimizer = optim.Adam(parameters)
     criterion = nn.CrossEntropyLoss(ignore_index=PAD_IDX)
 
+    print("Training Started")
+
     for epoch in range(N_EPOCHS):
         start_time = time.time()
 
-        train_loss = train(model, train_iter, num_batches,optimizer, criterion, CLIP)
-        valid_loss = evaluate(model, val_iter,val_batches, criterion, "evaluate")
+        train_loss = train(model, train_iter, num_batches, optimizer, criterion, CLIP)
+        valid_loss = evaluate(model, val_iter, val_batches, criterion, "evaluat")
 
         end_time = time.time()
 
@@ -105,10 +112,11 @@ if __name__ == '__main__':
         print(f'\t Val. Loss: {valid_loss:.3f}')
         
     test_size = math.ceil(len(test_data)/BATCH_SIZE)
-    test_loss = evaluate(model, test_iter, test_size, criterion, "testing")
+    test_loss = evaluate(model, test_iter, test_size, criterion, "test")
 
     print(f'| Test Loss: {test_loss:.3f}')
 
+    print("Training Done")
     print(f'Saving Model')
     torch.save(model.state_dict(), os.path.join(out_dir, "transformer_model.pt"))
 
