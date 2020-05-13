@@ -29,7 +29,7 @@ from data import get_src_trg, read_data
 from model import TransformerSummarizer
 from trainers import train, evaluate
 
-BATCH_SIZE = 128
+BATCH_SIZE = 512
 SEQ_LEN = 4000
 
 TRAIN_SIZE = 50000
@@ -40,14 +40,16 @@ D_MODEL = 300 # Embedding dimension
 DIM_FEEDFORWARD = 300  # Dimensionality of the hidden state
 
 ATTENTION_HEADS = 6  # number of attention heads
-N_LAYERS = 1 # number of encoder/decoder layers
+N_LAYERS = 3 # number of encoder/decoder layers
 
-N_EPOCHS = 1
+N_EPOCHS = 100
 CLIP = 1
 
 device = torch.device('cpu')
 
-base_dir = "cnn_dm"
+# base_dir = os.path.join(os.getcwd(), "data")
+base_dir = os.path.join(os.getcwd(), "cnn_dm")
+
 train_file_X = os.path.join(base_dir,"train.source")
 train_file_y = os.path.join(base_dir,"train.target")
 test_file_X = os.path.join(base_dir,"test.source")
