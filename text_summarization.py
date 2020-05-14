@@ -76,7 +76,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.output_path != "":
-        outdir = args.output_path
+        out_dir = args.output_path
 
     TRAIN_SIZE = None if args.training_size == 0 else args.training_size
     TEST_SIZE = None if args.test_size == 0 else args.test_size
