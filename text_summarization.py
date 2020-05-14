@@ -151,7 +151,7 @@ if __name__ == '__main__':
 
         model = TransformerSummarizer(ATTENTION_HEADS, N_LAYERS, N_LAYERS, DIM_FEEDFORWARD, \
                                         SEQ_LEN, VOCAB_SIZE, PAD_IDX, d_model=D_MODEL).to(device)
-        model.load_state_dict(args.model_path)
+        model.load_state_dict(torch.load(args.model_path, map_location=device))
 
     Path.mkdir(out_dir, parents=True, exist_ok=True)
 
