@@ -1,4 +1,4 @@
-# test-summarization
+# Abstractive Text-summarization
 
 ## Dataset
 The dataset used for this project is CNN/Daily Mail. You can download it using this link.
