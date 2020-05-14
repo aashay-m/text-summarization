@@ -6,3 +6,5 @@ __pycache__/
 .ipynb_checkpoints/overall_text_summ-checkpoint.ipynb
 fix_files.py
 results/final/corrected/train.target
+results/pred.txt
+results/true.txt
