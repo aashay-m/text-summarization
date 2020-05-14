@@ -169,5 +169,8 @@ if __name__ == '__main__':
             prediction = generate_summary(raw_text, model, src_list, src_dict, MAX_LENGTH)
 
             text.write(raw_text + "\n")
+            text.flush()
             true.write(true_summary + "\n")
+            true.flush()
             pred.write(prediction + "\n")
+            pred.flush()
