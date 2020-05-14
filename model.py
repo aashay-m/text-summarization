@@ -58,7 +58,7 @@ class TransformerSummarizer(nn.Module):
 
     def __init__(self, nhead, num_encoder_layers, num_decoder_layers, \
                     dim_feedforward, max_seq_length,vocab_size, pad_idx, \
-                        d_model=None, pos_dropout =0.1, trans_dropout= 0.1, embeddings=None):
+                        vocab_list, d_model=None, pos_dropout =0.1, trans_dropout= 0.1, embeddings=None):
         super().__init__()
        
         if embeddings is None:
@@ -73,6 +73,9 @@ class TransformerSummarizer(nn.Module):
             self.embed_tgt = nn.Embedding(*embeddings.shape)
             self.embed_tgt.weight = nn.Parameter(embeddings, requires_grad=False)
         
+        self.vocab_list = vocab_list
+        self.vocab_dict = {word: index for index, word in enumerate(vocab_list)}
+
         self.pos_enc = PositionalEncoding(d_model, pos_dropout, max_seq_length)
 
         self.transformer = nn.Transformer(d_model, nhead, num_encoder_layers, num_decoder_layers, dim_feedforward, trans_dropout)
