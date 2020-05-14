@@ -28,15 +28,17 @@ def idx2seq(idx_list, vocab_list):
     """
     return " ".join(vocab_list[i] for i in idx_list)
 
-def generate_summary(text, model, vocab_list, vocab_dict, max_len=150, device='cpu'):
+def generate_summary(text, model, max_len=150, device='cpu'):
     """
     :param text       : actual text
     :param model      : transformer model
-    :param vocab_list : idx2word list of the vocab
-    :param vocab_dict : word2idx dict of the vocab
     :param max_len    : max length of the generated text, 150 by default
     :param device     : device to store the tensors in, cpu by default
     """
+
+    vocab_dict = model.vocab_dict
+    vocab_list = model.vocab_list
+
     src = torch.Tensor(word2idx_mapper(text,vocab_dict)).long().unsqueeze(1).to(device)
     
     memory = model.transformer.encoder(model.pos_enc(model.embed_src(src) * math.sqrt(model.d_model)))
@@ -54,7 +56,7 @@ def generate_summary(text, model, vocab_list, vocab_dict, max_len=150, device='c
         if out_token == vocab_dict['<eos>']:
             break
 
-    return idx2seq(out_idx,vocab_list)
+    return idx2seq(out_idx, vocab_list)
 
 if __name__ == "__main__":
     print("Cannot run standalone, please use it as import generate_summary\n")

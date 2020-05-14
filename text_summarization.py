@@ -110,7 +110,7 @@ if __name__ == '__main__':
         embeddings =  ff.get_vecs_by_tokens(SRC.vocab.itos)
 
         model = TransformerSummarizer(ATTENTION_HEADS, N_LAYERS, N_LAYERS, DIM_FEEDFORWARD, \
-                                        SEQ_LEN, VOCAB_SIZE, PAD_IDX, embeddings=embeddings).to(device)
+                                        SEQ_LEN, VOCAB_SIZE, PAD_IDX, src_list, embeddings=embeddings).to(device)
 
         num_batches = math.ceil(len(train_data)/BATCH_SIZE)
         val_batches = math.ceil(len(val_data)/BATCH_SIZE)
@@ -150,7 +150,7 @@ if __name__ == '__main__':
             raise FileNotFoundError
 
         model = TransformerSummarizer(ATTENTION_HEADS, N_LAYERS, N_LAYERS, DIM_FEEDFORWARD, \
-                                        SEQ_LEN, VOCAB_SIZE, PAD_IDX, d_model=D_MODEL).to(device)
+                                        SEQ_LEN, VOCAB_SIZE, PAD_IDX, src_list, d_model=D_MODEL).to(device)
         model.load_state_dict(torch.load(args.model_path, map_location=device))
 
     Path.mkdir(out_dir, parents=True, exist_ok=True)
