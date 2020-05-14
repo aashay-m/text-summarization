@@ -9,3 +9,5 @@ results/final/corrected/train.target
 results/transformer/pred.txt
 results/transformer/text.txt
 results/transformer/true.txt
+results/pred.txt
+results/true.txt
