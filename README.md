@@ -16,10 +16,10 @@ tar -xzvf cnn_dm.tgz
 - Transfer of knowledge among different tasks.
 - The idea of pretraining a model and transferring its knowledge to downstream tasks.
 - Using the knowledge base of a pretrained model, new tasks are solved.
->```
+```
 We used T5 and BART pretrained transformer models and fine tuned them for the text summarization tasks. We fine tuned the model on the CNN/Daily mail dataset.
 We achieved pretty decent results. In addition, we also built a transformer model with self-attention layers. This modle requires longer training duration and a larger pretraining dataset to yield higher performance. 
->```
+```
 
 ### T5 Transformer
 - T5 **T**ext-to-**T**ext **T**ransfer **T**ransformer.
