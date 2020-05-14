@@ -150,7 +150,7 @@ if __name__ == '__main__':
             raise FileNotFoundError
 
         model = TransformerSummarizer(ATTENTION_HEADS, N_LAYERS, N_LAYERS, DIM_FEEDFORWARD, \
-                                        SEQ_LEN, VOCAB_SIZE, PAD_IDX).to(device)
+                                        SEQ_LEN, VOCAB_SIZE, PAD_IDX, d_model=D_MODEL).to(device)
         model.load_state_dict(args.model_path)
 
     Path.mkdir(out_dir, parents=True, exist_ok=True)
